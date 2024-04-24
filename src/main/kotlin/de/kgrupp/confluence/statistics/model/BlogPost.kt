@@ -5,5 +5,6 @@ data class BlogPost(
     val title: String,
     val author: User,
     val likeCount: Int,
-    val createdAt: String
+    val createdAt: String,
+    val link: String
 )

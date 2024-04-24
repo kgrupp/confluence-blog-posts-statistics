@@ -7,9 +7,12 @@ data class ConfluenceBlogPost(
     val id: String,
     val title: String,
     val authorId: String,
-    val createdAt: String
+    val createdAt: String,
+    val _links: ConfluenceBlogPostLinks
 )
 
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class ConfluenceBlogPostLinks(val tinyui: String, val webui: String)
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class ResultConfluenceBlogPost(var results: List<ConfluenceBlogPost>, var _links: ResultLinks)
 
