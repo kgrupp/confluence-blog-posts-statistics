@@ -34,13 +34,13 @@ It will print user statistics in a json format like the following:
     "title" : "Blog Post Title 2",
     "likeCount" : 11,
     "createdAt" : "2024-02-12T09:58:42",
-    "link" : "YOUR_INSTANCE/wiki/x/EFGH"
+    "link" : "https://YOUR_INSTANCE.atlassian.net/wiki/x/EFGH"
   }, {
     "id" : "blog-post-id-3",
     "title" : "Blog Post Title 3",
     "likeCount" : 9,
     "createdAt" : "2024-04-11T11:37:57",
-    "link" : "YOUR_INSTANCE/wiki/x/IJKL"
+    "link" : "https://YOUR_INSTANCE.atlassian.net/wiki/x/IJKL"
   } ]
 }, {
   // and more entries
