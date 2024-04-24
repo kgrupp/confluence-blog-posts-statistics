@@ -48,6 +48,6 @@ class Statistics {
   fun List<UserStatistics>.convertToJson(): String {
     val objectMapper = ObjectMapper()
     objectMapper.registerModule(KotlinModule.Builder().build())
-    return objectMapper.writeValueAsString(this)
+    return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(this)
   }
 }
