@@ -1,13 +1,14 @@
 package de.kgrupp.confluence.statistics.rest.model
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import java.time.Instant
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class ConfluenceBlogPost(
     val id: String,
     val title: String,
     val authorId: String,
-    val createdAt: String,
+    val createdAt: Instant,
     val _links: ConfluenceBlogPostLinks
 )
 

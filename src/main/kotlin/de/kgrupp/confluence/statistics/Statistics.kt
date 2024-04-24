@@ -1,16 +1,19 @@
 package de.kgrupp.confluence.statistics
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import de.kgrupp.confluence.statistics.model.BlogPost
 import de.kgrupp.confluence.statistics.model.User
 import de.kgrupp.confluence.statistics.model.UserStatistics
+import java.time.LocalDate
+import java.time.ZoneId
 
 class Statistics {
   private val configuration: Configuration = Configuration()
   private val confluenceRestApi: ConfluenceRestApi = ConfluenceRestApi(configuration)
 
-  fun get(confluenceSpaces: List<String>) {
+  fun get(confluenceSpaces: List<String>, minCreatedDate: LocalDate) {
     val filteredSpaces = confluenceRestApi.getSpaces().filter { confluenceSpaces.contains(it.key) }
     val blogPosts = filteredSpaces.flatMap { confluenceRestApi.getBlotPosts(it) }
     val userMap = HashMap<String, User>()
@@ -30,7 +33,7 @@ class Statistics {
               likeCount = likeCount.count,
               createdAt = it.createdAt,
               link = "${configuration.getBaseUrl()}/wiki${it._links.tinyui}")
-        }
+        }.filter { minCreatedDate.isBefore(it.createdAt.atZone(ZoneId.of("UTC")).toLocalDate()) }
     val authorStatistics =
         blogPostModels
             .groupBy { it.author }
@@ -48,6 +51,7 @@ class Statistics {
   fun List<UserStatistics>.convertToJson(): String {
     val objectMapper = ObjectMapper()
     objectMapper.registerModule(KotlinModule.Builder().build())
+    objectMapper.registerModule(JavaTimeModule())
     return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(this)
   }
 }
