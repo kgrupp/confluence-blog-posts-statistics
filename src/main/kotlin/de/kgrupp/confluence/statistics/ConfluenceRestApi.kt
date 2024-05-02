@@ -4,13 +4,14 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import de.kgrupp.confluence.statistics.rest.model.ConfluenceBlogPost
-import de.kgrupp.confluence.statistics.rest.model.ConfluenceBlogPostLikeCount
+import de.kgrupp.confluence.statistics.rest.model.ConfluenceGraphQlReactionSummary
 import de.kgrupp.confluence.statistics.rest.model.ConfluenceSpace
 import de.kgrupp.confluence.statistics.rest.model.ConfluenceUser
 import de.kgrupp.confluence.statistics.rest.model.ResultConfluenceBlogPost
 import de.kgrupp.confluence.statistics.rest.model.ResultConfluenceSpace
 import de.kgrupp.confluence.statistics.rest.model.ResultLinks
 import khttp.get
+import khttp.post
 
 class ConfluenceRestApi(val configuration: Configuration) {
 
@@ -43,7 +44,7 @@ class ConfluenceRestApi(val configuration: Configuration) {
     return result.results + pageThroughSpaces(result._links)
   }
 
-  fun getBlotPosts(space: ConfluenceSpace): List<ConfluenceBlogPost> {
+  fun getBlogPosts(space: ConfluenceSpace): List<ConfluenceBlogPost> {
     val response =
         get(
             url = "${configuration.getBaseUrl()}/wiki/api/v2/blogposts",
@@ -65,12 +66,28 @@ class ConfluenceRestApi(val configuration: Configuration) {
     return result.results + pageThroughBlogPosts(result._links)
   }
 
-  fun getLikeCountForBlogPost(blogPost: ConfluenceBlogPost): ConfluenceBlogPostLikeCount {
+  /** We are using the internal confluence graphql api here to get the reactions count for a blog post. */
+  fun getLikeCountForBlogPost(blogPost: ConfluenceBlogPost): ConfluenceGraphQlReactionSummary {
     val response =
-        get(
-            url = "${configuration.getBaseUrl()}/wiki/api/v2/blogposts/${blogPost.id}/likes/count",
-            headers = mapOf("Authorization" to configuration.getBasicAuth()))
-    return objectMapper.readValue(response.text, ConfluenceBlogPostLikeCount::class.java)
+        post(
+            url = "${configuration.getBaseUrl()}/cgraphql?q=ReactionsPlaceholderQuery",
+            data =
+                """
+                    {
+                    		"operationName": "ReactionsPlaceholderQuery",
+                    		"query": "query ReactionsPlaceholderQuery(${"$"}contentId: ID!) { content(id: ${"$"}contentId) { nodes { id contentReactionsSummary { reactionsSummaryForEmoji { id count emojiId } } } } }",
+                    		"variables": {
+                    			"contentId": "${blogPost.id}"
+                    		}
+                    	}
+                """
+                    .trimIndent(),
+            headers =
+                mapOf(
+                    "Authorization" to configuration.getBasicAuth(),
+                    "Accept" to "application/json",
+                    "Content-Type" to "application/json"))
+    return objectMapper.readValue(response.text, ConfluenceGraphQlReactionSummary::class.java)
   }
 
   fun getUser(accountId: String): ConfluenceUser {

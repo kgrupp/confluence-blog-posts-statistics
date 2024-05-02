@@ -16,12 +16,17 @@ class Statistics {
 
   fun get(confluenceSpaces: List<String>, minCreatedDate: LocalDate) {
     val filteredSpaces = confluenceRestApi.getSpaces().filter { confluenceSpaces.contains(it.key) }
-    val blogPosts = filteredSpaces.flatMap { confluenceRestApi.getBlotPosts(it) }
+    val blogPosts = filteredSpaces.flatMap { confluenceRestApi.getBlogPosts(it) }
     val userMap = HashMap<String, User>()
     val blogPostModels =
         blogPosts
             .map {
-              val likeCount = confluenceRestApi.getLikeCountForBlogPost(it)
+              val likeCount =
+                  confluenceRestApi
+                      .getLikeCountForBlogPost(it).data.content.nodes
+                      .flatMap { it.contentReactionsSummary.reactionsSummaryForEmoji }
+                      .map { it.count }
+                      .sum()
               val user =
                   userMap.getOrPut(it.authorId) {
                     confluenceRestApi.getUser(it.authorId).let {
@@ -32,7 +37,7 @@ class Statistics {
                   id = it.id,
                   title = it.title,
                   author = user,
-                  likeCount = likeCount.count,
+                  likeCount = likeCount,
                   createdAt = it.createdAt,
                   link = "${configuration.getBaseUrl()}/wiki${it._links.tinyui}")
             }

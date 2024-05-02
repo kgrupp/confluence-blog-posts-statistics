@@ -16,5 +16,3 @@ data class ConfluenceBlogPost(
 data class ConfluenceBlogPostLinks(val tinyui: String, val webui: String)
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class ResultConfluenceBlogPost(var results: List<ConfluenceBlogPost>, var _links: ResultLinks)
-
-data class ConfluenceBlogPostLikeCount(val count: Int)
