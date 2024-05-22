@@ -10,6 +10,8 @@ import de.kgrupp.confluence.statistics.rest.model.ConfluenceUser
 import de.kgrupp.confluence.statistics.rest.model.ResultConfluenceBlogPost
 import de.kgrupp.confluence.statistics.rest.model.ResultConfluenceSpace
 import de.kgrupp.confluence.statistics.rest.model.ResultLinks
+import java.time.LocalDate
+import java.time.ZoneId
 import khttp.get
 import khttp.post
 
@@ -44,17 +46,25 @@ class ConfluenceRestApi(val configuration: Configuration) {
     return result.results + pageThroughSpaces(result._links)
   }
 
-  fun getBlogPosts(space: ConfluenceSpace): List<ConfluenceBlogPost> {
+  fun getBlogPosts(space: ConfluenceSpace, minCreatedDate: LocalDate): List<ConfluenceBlogPost> {
     val response =
         get(
             url = "${configuration.getBaseUrl()}/wiki/api/v2/blogposts",
             params = mapOf("space-id" to space.id, "sort" to "-created-date", "limit" to "250"),
             headers = mapOf("Authorization" to configuration.getBasicAuth()))
     val result = objectMapper.readValue(response.text, ResultConfluenceBlogPost::class.java)
-    return result.results + pageThroughBlogPosts(result._links)
+    val breakCondition: (ConfluenceBlogPost) -> Boolean = {
+      it.createdAt.atZone(ZoneId.of("UTC")).toLocalDate() < minCreatedDate
+    }
+    return (result.results + pageThroughBlogPosts(result._links, breakCondition)).filter {
+      breakCondition(it).not()
+    }
   }
 
-  private fun pageThroughBlogPosts(resultLinks: ResultLinks): List<ConfluenceBlogPost> {
+  private fun pageThroughBlogPosts(
+      resultLinks: ResultLinks,
+      breakCondition: (ConfluenceBlogPost) -> Boolean
+  ): List<ConfluenceBlogPost> {
     if (resultLinks.next == null) {
       return emptyList()
     }
@@ -63,10 +73,17 @@ class ConfluenceRestApi(val configuration: Configuration) {
             url = "${configuration.getBaseUrl()}${resultLinks.next}",
             headers = mapOf("Authorization" to configuration.getBasicAuth()))
     val result = objectMapper.readValue(response.text, ResultConfluenceBlogPost::class.java)
-    return result.results + pageThroughBlogPosts(result._links)
+    return if (result.results.any(breakCondition)) {
+      result.results
+    } else {
+      result.results + pageThroughBlogPosts(result._links, breakCondition)
+    }
   }
 
-  /** We are using the internal confluence graphql api here to get the reactions count for a blog post. */
+  /**
+   * We are using the internal confluence graphql api here to get the reactions count for a blog
+   * post.
+   */
   fun getLikeCountForBlogPost(blogPost: ConfluenceBlogPost): ConfluenceGraphQlReactionSummary {
     val response =
         post(

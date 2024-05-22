@@ -16,7 +16,7 @@ class Statistics {
 
   fun get(confluenceSpaces: List<String>, minCreatedDate: LocalDate) {
     val filteredSpaces = confluenceRestApi.getSpaces().filter { confluenceSpaces.contains(it.key) }
-    val blogPosts = filteredSpaces.flatMap { confluenceRestApi.getBlogPosts(it) }
+    val blogPosts = filteredSpaces.flatMap { confluenceRestApi.getBlogPosts(it, minCreatedDate) }
     val userMap = HashMap<String, User>()
     val blogPostModels =
         blogPosts
