@@ -1,5 +1,3 @@
-'use client';
-
 import React from "react";
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
@@ -37,7 +35,7 @@ export const Visualizer = () => {
                             <Chip icon={<RecommendIcon/>} label={statistic.totalLikes}/>
                         </Box>
                     </Typography>
-                    <Typography variant="body2" sx={{display: 'flex', flexDirection: 'column', gap: 1, paddingTop: 1}}>
+                    <Typography variant="body2" component="div" sx={{display: 'flex', flexDirection: 'column', gap: 1, paddingTop: 1}}>
                         {statistic.popularBlogPosts.map(blogPost => (
                             <Box key={blogPost.title} sx={{display: 'flex', justifyContent: 'space-between'}}>
                                 <Link href={blogPost.link} underline={"none"} target={"_blank"}>{blogPost.title}</Link>
