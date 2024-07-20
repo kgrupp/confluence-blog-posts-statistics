@@ -52,15 +52,16 @@ class Statistics {
                   user = user,
                   totalBlogPosts = blogPosts.size,
                   totalLikes = blogPosts.map { it.likeCount }.reduce { a, b -> a + b },
-                  popularBlogPosts = blogPosts.sortedBy { -it.likeCount }.take(5))
+                  popularBlogPosts = blogPosts.sortedBy { -it.likeCount })
             }
             .sortedWith { a, b ->
               if (a.totalBlogPosts == b.totalBlogPosts) b.totalLikes.compareTo(a.totalLikes)
               else b.totalBlogPosts.compareTo(a.totalBlogPosts)
             }
-    println(authorStatistics.convertToMarkdown())
-    authorStatistics.convertToMarkdown().writeToFile(File("statistics.md"))
+    println("Data loaded!")
+    authorStatistics.convertToMarkdown(minCreatedDate).writeToFile(File("statistics.md"))
     authorStatistics.writeToFile(File("visualize/src/data/statistics.json"))
+    println("Files created!")
   }
 
   private fun List<UserStatistics>.writeToFile(file: File) {
