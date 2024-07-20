@@ -12,6 +12,14 @@ password=ATLASSIAN_PW_OR_DEVELOPER_TOKEN
 ```
 * Let gradle build and execute the main function in Application.kt with a comma separated list of your space keys and the minimum created date (e.g. `DEV,ABC 2024-01-01`).
 
+### Markdown Output
+
+And additionally it will create a markdown formatted file (`statistics.md`). You can copy it into the confluence cloud editor to visualize the statistics.
+
+See example output [here](statistics-example.md).
+
+### JSON Output
+
 It will print user statistics in a json format like the following:
 
 ```json
@@ -46,3 +54,6 @@ It will print user statistics in a json format like the following:
   // and more entries
 } ]
 ```
+
+Additionally, it will save the file to `visualize/src/data/statistics.json`.
+For details how to generate a static html page based on that see [visualize/README.md](visualize/README.md).

@@ -2,7 +2,7 @@
 
 ```
 npm install
-npm run dev
+npm run build
 ```
 
-And got to `http://localhost:3000/` in your browser.
+The static page will be generated in the `out` folder.
