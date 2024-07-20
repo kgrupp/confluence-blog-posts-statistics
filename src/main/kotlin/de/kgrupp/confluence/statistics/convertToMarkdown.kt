@@ -8,10 +8,12 @@ import java.time.format.FormatStyle
 
 fun List<UserStatistics>.convertToMarkdown(minCreatedDate: LocalDate): String {
   val builder = StringBuilder()
+  val totalAuthors = this.size
   val totalBlogPosts = this.sumOf { it.totalBlogPosts }
   val totalBlogPostLikes = this.sumOf { it.totalLikes }
   builder.appendLine("# Statistics")
-  builder.append("\uD83D\uDCDC $totalBlogPosts")
+  builder.append("\uD83D\uDCDD $totalAuthors")
+  builder.append(" | \uD83D\uDCDC $totalBlogPosts")
   builder.append(" | \uD83D\uDC4D $totalBlogPostLikes")
   builder.appendLine()
   builder.appendLine("# Top recent blog posts")
@@ -26,8 +28,8 @@ fun List<UserStatistics>.convertToMarkdown(minCreatedDate: LocalDate): String {
           .take(15)
           .toList()
   topRecentBlogPosts.forEachIndexed { index, blogPost ->
-    builder.append("${index + 1}. [${blogPost.title}](${blogPost.link})")
-    builder.append(" | \uD83D\uDCDC ${blogPost.author.name}")
+    builder.append("* [${blogPost.title}](${blogPost.link})")
+    builder.append(" | \uD83D\uDCDD ${blogPost.author.name}")
     builder.append(" | \uD83D\uDC4D ${blogPost.likeCount}")
     builder.appendLine()
   }
@@ -42,8 +44,8 @@ fun List<UserStatistics>.convertToMarkdown(minCreatedDate: LocalDate): String {
     builder.append(" | \uD83D\uDC4D ${userStatistics.totalLikes}")
     builder.appendLine()
     userStatistics.popularBlogPosts.take(5).forEachIndexed { i, blogPost ->
-      builder.append("${i + 1}. [${blogPost.title}](${blogPost.link})")
-      builder.append(" | \uD83D\uDC4D ${blogPost.likeCount}\n")
+      builder.append("* [${blogPost.title}](${blogPost.link})")
+      builder.append(" | \uD83D\uDC4D ${blogPost.likeCount}")
       builder.appendLine()
     }
     builder.appendLine()
