@@ -20,26 +20,28 @@ class Statistics {
     val userMap = HashMap<String, User>()
     val blogPostModels =
         blogPosts
-            .map {
+            .map { blogPost ->
               val likeCount =
                   confluenceRestApi
-                      .getLikeCountForBlogPost(it).data.content.nodes
+                      .getLikeCountForBlogPost(blogPost)
+                      .data
+                      .content
+                      .nodes
                       .flatMap { it.contentReactionsSummary.reactionsSummaryForEmoji }
-                      .map { it.count }
-                      .sum()
+                      .sumOf { it.count }
               val user =
-                  userMap.getOrPut(it.authorId) {
-                    confluenceRestApi.getUser(it.authorId).let {
+                  userMap.getOrPut(blogPost.authorId) {
+                    confluenceRestApi.getUser(blogPost.authorId).let {
                       User(id = it.accountId, name = it.displayName, emailAddress = it.email)
                     }
                   }
               BlogPost(
-                  id = it.id,
-                  title = it.title,
+                  id = blogPost.id,
+                  title = blogPost.title,
                   author = user,
                   likeCount = likeCount,
-                  createdAt = it.createdAt,
-                  link = "${configuration.getBaseUrl()}/wiki${it._links.tinyui}")
+                  createdAt = blogPost.createdAt,
+                  link = "${configuration.getBaseUrl()}/wiki${blogPost._links.tinyui}")
             }
             .filter { minCreatedDate.isBefore(it.createdAt.atZone(ZoneId.of("UTC")).toLocalDate()) }
     val authorStatistics =
@@ -50,27 +52,25 @@ class Statistics {
                   user = user,
                   totalBlogPosts = blogPosts.size,
                   totalLikes = blogPosts.map { it.likeCount }.reduce { a, b -> a + b },
-                  popularBlogPosts = blogPosts.sortedBy { -it.likeCount }.take(3))
+                  popularBlogPosts = blogPosts.sortedBy { -it.likeCount }.take(5))
             }
-            .sortedWith({ a, b ->
+            .sortedWith { a, b ->
               if (a.totalBlogPosts == b.totalBlogPosts) b.totalLikes.compareTo(a.totalLikes)
               else b.totalBlogPosts.compareTo(a.totalBlogPosts)
-            })
-    println(authorStatistics.convertToJson())
+            }
+    println(authorStatistics.convertToMarkdown())
+    authorStatistics.convertToMarkdown().writeToFile(File("statistics.md"))
     authorStatistics.writeToFile(File("visualize/src/data/statistics.json"))
   }
 
-  fun List<UserStatistics>.convertToJson(): String {
-    val objectMapper = ObjectMapper()
-    objectMapper.registerModule(KotlinModule.Builder().build())
-    objectMapper.registerModule(JavaTimeModule())
-    return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(this)
-  }
-
-  fun List<UserStatistics>.writeToFile(file: File) {
+  private fun List<UserStatistics>.writeToFile(file: File) {
     val objectMapper = ObjectMapper()
     objectMapper.registerModule(KotlinModule.Builder().build())
     objectMapper.registerModule(JavaTimeModule())
     objectMapper.writerWithDefaultPrettyPrinter().writeValue(file, this)
+  }
+
+  private fun String.writeToFile(file: File) {
+    file.writeText(this)
   }
 }
