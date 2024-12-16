@@ -6,6 +6,8 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
+private const val MAX_BLOG_POSTS_PER_AUTHOR_SHOWN = 15
+
 fun List<UserStatistics>.convertToMarkdown(minCreatedDate: LocalDate): String {
   val builder = StringBuilder()
   val totalAuthors = this.size
@@ -43,7 +45,9 @@ fun List<UserStatistics>.convertToMarkdown(minCreatedDate: LocalDate): String {
     builder.append(" | \uD83D\uDCDC ${userStatistics.totalBlogPosts}")
     builder.append(" | \uD83D\uDC4D ${userStatistics.totalLikes}")
     builder.appendLine()
-    userStatistics.popularBlogPosts.take(5).forEachIndexed { i, blogPost ->
+    userStatistics.popularBlogPosts.take(MAX_BLOG_POSTS_PER_AUTHOR_SHOWN).forEachIndexed {
+        i,
+        blogPost ->
       builder.append("* [${blogPost.title}](${blogPost.link})")
       builder.append(" | \uD83D\uDC4D ${blogPost.likeCount}")
       builder.appendLine()

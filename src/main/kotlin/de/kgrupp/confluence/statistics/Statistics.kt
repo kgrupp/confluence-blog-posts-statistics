@@ -14,7 +14,7 @@ class Statistics {
   private val configuration: Configuration = Configuration()
   private val confluenceRestApi: ConfluenceRestApi = ConfluenceRestApi(configuration)
 
-  fun get(confluenceSpaces: List<String>, minCreatedDate: LocalDate) {
+  fun get(confluenceSpaces: List<String>, minCreatedDate: LocalDate, maxCreatedDate: LocalDate?) {
     val filteredSpaces = confluenceRestApi.getSpaces().filter { confluenceSpaces.contains(it.key) }
     val blogPosts = filteredSpaces.flatMap { confluenceRestApi.getBlogPosts(it, minCreatedDate) }
     val userMap = HashMap<String, User>()
@@ -44,6 +44,9 @@ class Statistics {
                   link = "${configuration.getBaseUrl()}/wiki${blogPost._links.tinyui}")
             }
             .filter { minCreatedDate.isBefore(it.createdAt.atZone(ZoneId.of("UTC")).toLocalDate()) }
+            .filter {
+              maxCreatedDate?.isAfter(it.createdAt.atZone(ZoneId.of("UTC")).toLocalDate()) ?: true
+            }
     val authorStatistics =
         blogPostModels
             .groupBy { it.author }

@@ -2,3 +2,4 @@ src/main/resources/configuration.properties
 statistics.md
 build
 .gradle
+.idea
