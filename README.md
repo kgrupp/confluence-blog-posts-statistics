@@ -15,6 +15,7 @@ password=ATLASSIAN_PW_OR_DEVELOPER_TOKEN
 * Let gradle build and execute the main function in Application.kt with a comma separated list of your space keys and the minimum created date (e.g.
   `DEV,ABC 2024-01-01`).
 * As optional third parameter add the maximum created date (e.g. `DEV,ABC 2024-01-01 2024-12-31`).
+* As optional forth parameter add the maximum created date (e.g. `DEV,ABC 2024-01-01 2024-12-31 2024-11-01`).
 
 ### Markdown Output
 
