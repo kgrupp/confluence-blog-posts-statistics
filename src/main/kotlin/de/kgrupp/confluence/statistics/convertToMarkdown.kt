@@ -44,7 +44,9 @@ fun List<UserStatistics>.convertToMarkdown(minCreatedDate: LocalDate, recentBlog
         val ranking = getRanking(index)
         builder.append("## ${ranking} ${userStatistics.user.name}")
         builder.append(" | \uD83D\uDCDC ${userStatistics.totalBlogPosts}")
-        builder.append(" | \uD83D\uDC4D ${userStatistics.totalLikes}")
+        if (userStatistics.totalLikes > 0) {
+            builder.append(" | \uD83D\uDC4D ${userStatistics.totalLikes}")
+        }
         builder.appendLine()
         userStatistics.popularBlogPosts.take(MAX_BLOG_POSTS_PER_AUTHOR_SHOWN).forEachIndexed { i,
                                                                                                blogPost ->
